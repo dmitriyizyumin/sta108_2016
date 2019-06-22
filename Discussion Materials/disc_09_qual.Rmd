@@ -1,0 +1,160 @@
+---
+title: "Discussion 9: Qualitative Predictors"
+author: "Christine Cai"
+date: "March 1, 2016"
+output: html_document
+---
+
+***
+
+```{r}
+dat = read.table('CH08PR24.txt')
+names(dat) = c('y', 'x1', 'x2')
+head(dat)
+```
+
+As usual, `y` is the response. However, while `x1` is a quantitative predictor, `x2` is a qualitative predictor. Problem 8.24 in your text describes the 2 levels of `x2` as 2 'populations'. Suppose we want to plot the data, while making a clear distinction between the 2 populations.
+
+We want to split `dat` into the groups defined by `x2`. `?split`
+```{r}
+dat.spl = split(dat, dat$x2); dat.spl
+```
+
+`dat.spl` is a list, so we can access its elements with `[[ ]]` or by their names. Let's try plotting `y` vs `x1` for `x2 = 0`.
+```{r}
+plot(dat.spl[[1]]$x1, dat.spl$'0'$y, 
+     xlab = 'Assessed Valuation (Thousand Dollars)', 
+     ylab = 'Selling Price (Thousand Dollars)')
+```
+
+Or equivalently,
+```{r}
+with(dat.spl$'0', plot(x1, y, 
+     xlab = 'Assessed Valuation (Thousand Dollars)', 
+     ylab = 'Selling Price (Thousand Dollars)'))
+```
+
+The `with()` command tells R to look for any objects in our function call (`plot()`) under the environment we give (`dat.spl$'0'`).
+
+We also want to plot `y` vs `x1` for `x2 = 1`. But we want these points to be on the same plot. Recall the function `points()`,
+```{r}
+with(dat.spl$'0', plot(x1, y, 
+     xlab = 'Assessed Valuation (Thousand Dollars)', 
+     ylab = 'Selling Price (Thousand Dollars)'))
+with(dat.spl$'1', points(x1, y))
+```
+
+Note that we can't tell which points correspond to `x2 = 0` and which correspond to `x2 = 1`. You may choose to distinguish the 2 populations by using different plotting characters, colors, or both. If you don't have access to a color printer, then you must use different plotting characters.
+```{r}
+with(dat.spl$'0', plot(x1, y, 
+     xlab = 'Assessed Valuation (Thousand Dollars)', 
+     ylab = 'Selling Price (Thousand Dollars)'))
+with(dat.spl$'1', points(x1, y, pch = 2, col = 'blue'))
+```
+
+The original plotting window was determined by the points corresponding to `x2 = 0`, so some points corresponding to `x2 = 1` may be outside of that window and are not plotted. To ensure that the original plotting window will include all the points, we need to define our own x and y limits in the first `plot()` command. The `xlim` needs to be the range of the `x1` vector in the original `dat`. Similarly, `ylim` needs to be the range of the `y` vector in the original `dat`.
+```{r}
+with(dat.spl$'0', plot(x1, y, 
+     xlab = 'Assessed Valuation (Thousand Dollars)', 
+     ylab = 'Selling Price (Thousand Dollars)', 
+     xlim = range(dat$x1), ylim = range(dat$y)))
+with(dat.spl$'1', points(x1, y, pch = 2, col = 'blue'))
+```
+
+The last thing we need to do for this plot is to include a legend. `?legend`
+```{r}
+with(dat.spl$'0', plot(x1, y, 
+     xlab = 'Assessed Valuation (Thousand Dollars)', 
+     ylab = 'Selling Price (Thousand Dollars)', 
+     xlim = range(dat$x1), ylim = range(dat$y)))
+with(dat.spl$'1', points(x1, y, pch = 2, col = 'blue'))
+legend('topleft', legend = c('Non-corner Lots', 'Corner Lots'), 
+       pch = 1:2, col = c(1, 'blue'))
+```
+
+Just as with a function like `points()`, `legend()` appends to the last plot created.
+
+Now suppose we want to add the estimated regression functions for the 2 populations to our plot. First, fit 2 separate regressions for the 2 populations.
+```{r}
+fit0 = lm(y ~ x1, data = dat.spl$'0'); fit0
+fit1 = lm(y ~ x1, data = dat.spl$'1'); fit1
+```
+
+Add the first regression line,
+```{r}
+with(dat.spl$'0', plot(x1, y, 
+     xlab = 'Assessed Valuation (Thousand Dollars)', 
+     ylab = 'Selling Price (Thousand Dollars)', 
+     xlim = range(dat$x1), ylim = range(dat$y)))
+with(dat.spl$'1', points(x1, y, pch = 2, col = 'blue'))
+legend('topleft', legend = c('Non-corner Lots', 'Corner Lots'), 
+       pch = 1:2, col = c(1, 'blue'))
+points(dat.spl$'0'$x1, fit0$fit, type = 'l')
+```
+
+The line looks a bit strange. A closer look at the dataset will reveal that it is not ordered in terms of `x1`.
+```{r}
+head(dat)
+```
+
+So when R is plotting the points in a line, it is zigzagging back and forth instead of connecting points in order. To fix this, we need the order in which the rows should occur if `x1` is in increasing order. Note that since each row of `dat` is one observation, we cannot just sort `x1`. Instead, we need to sort the rows of `dat` in increasing order of `x1`.
+```{r}
+ind = order(dat$x1); ind
+```
+
+The above means that row 59 of `dat` contains the smallest value for `x1`, followed by row 11, 57, and so on. Row 62 of `dat` contains the largest `x1`. So now we just need to rearrange the rows of `dat` according to the above order we found.
+```{r}
+dat = dat[ind,]; head(dat)
+```
+
+Now we need to rerun our code with this newly sorted `dat`.
+```{r}
+dat.spl = split(dat, dat$x2); dat.spl
+fit0 = lm(y ~ x1, data = dat.spl$'0'); fit0
+fit1 = lm(y ~ x1, data = dat.spl$'1'); fit1
+with(dat.spl$'0', plot(x1, y, 
+     xlab = 'Assessed Valuation (Thousand Dollars)', 
+     ylab = 'Selling Price (Thousand Dollars)', 
+     xlim = range(dat$x1), ylim = range(dat$y)))
+with(dat.spl$'1', points(x1, y, pch = 2, col = 'blue'))
+legend('topleft', legend = c('Non-corner Lots', 'Corner Lots'), 
+       pch = 1:2, col = c(1, 'blue'))
+points(dat.spl$'0'$x1, fit0$fit, type = 'l')
+```
+
+This line looks cleaner than the previous one. Now add the other regression function. You may choose to distinguish the 2 regression functions by using different line types, colors, or both. If you don't have access to a color printer, then you must use different line types.
+```{r}
+with(dat.spl$'0', plot(x1, y, 
+     xlab = 'Assessed Valuation (Thousand Dollars)', 
+     ylab = 'Selling Price (Thousand Dollars)', 
+     xlim = range(dat$x1), ylim = range(dat$y)))
+with(dat.spl$'1', points(x1, y, pch = 2, col = 'blue'))
+legend('topleft', legend = c('Non-corner Lots', 'Corner Lots'), 
+       pch = 1:2, col = c(1, 'blue'))
+points(dat.spl$'0'$x1, fit0$fit, type = 'l')
+points(dat.spl$'1'$x1, fit1$fit, type = 'l', lty = 2, col = 'blue')
+```
+
+Lastly, let's change the `legend()` command to account for the added regression lines.
+```{r}
+with(dat.spl$'0', plot(x1, y, 
+     xlab = 'Assessed Valuation (Thousand Dollars)', 
+     ylab = 'Selling Price (Thousand Dollars)', 
+     xlim = range(dat$x1), ylim = range(dat$y)))
+with(dat.spl$'1', points(x1, y, pch = 2, col = 'blue'))
+points(dat.spl$'0'$x1, fit0$fit, type = 'l')
+points(dat.spl$'1'$x1, fit1$fit, type = 'l', lty = 2, col = 'blue')
+legend('topleft', legend = c('Non-corner Lots', 'Corner Lots'), 
+       pch = 1:2, col = c(1, 'blue'), lty = 1:2)
+```
+
+***
+
+### Model Fitting
+
+To fit $Y_i = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_1 X_2 + \varepsilon_i$,
+```{r}
+fit = lm(y ~ x1*as.factor(x2), data = dat)
+summary(fit)
+anova(fit)
+```

@@ -1,0 +1,83 @@
+---
+title: "Discussion 6: Matrices"
+author: "Christine Cai"
+date: "February 9, 2016"
+output: html_document
+---
+
+***
+
+```{r}
+dat = read.table('CH05PR05.txt')
+names(dat) = c('y', 'x')
+dat
+fit = lm(y ~ x, data = dat)
+```
+
+Whenever I refer to matrices here, I'm also referring to vectors. Think of column vectors as $m \times 1$ matrices, and think of row vectors as $1 \times n$ matrices.
+
+***
+
+```{r}
+dat$y
+```
+
+Even though it may not seem like it at first, by default, vectors in R are column vectors.
+
+$\boldsymbol{Y}'$:
+```{r}
+t(dat$y)
+```
+
+$\boldsymbol{Y}'$ is $1 \times 6$, which means it is a row vector with 6 elements. So $\boldsymbol{Y}$ must be a column vector. It will be important to keep track of dimensions for matrix multiplication.
+
+***
+
+If the simple linear regression model we're fitting includes an intercept term, $\beta_0$, then our design matrix $\boldsymbol{X}$ has two columns. The first column is a column of ones, and the second column is the $x_i$'s. We can create $\boldsymbol{X}$ by binding a column of ones to the column of $x_i$'s. Intuitively, we might want to do something like this:
+
+Repeat '1' $n$ times:
+```{r}
+ones = rep(1, nrow(dat)); ones
+```
+
+Column bind 'ones' with 'dat$x':
+```{r}
+X = cbind(ones, dat$x); X
+```
+
+However, we don't need to repeat the ones ourselves.
+```{r}
+X = cbind(1, dat$x); X
+```
+
+R automatically repeats the '1' so that the two columns are the same length; this is known as the recycling rule in R.
+
+We can name the columns of $\boldsymbol{X}$ in its creation:
+```{r}
+X = cbind(Intercept = 1, x = dat$x); X
+```
+
+We can also obtain the design matrix by simply extracting it from our fitted model with
+```{r}
+X = model.matrix(fit); X
+```
+
+Don't worry about the extra information displayed at the bottom, they will not affect your calculations.
+
+***
+
+The operators for matrix addition and subtraction are the same as for scalars, i.e. `+` and `-`. The operator for matrix multiplication is `%*%`. $\boldsymbol{X}'\boldsymbol{X}$:
+```{r}
+t(X)%*%X
+```
+
+The function to calculate the inverse of a matrix is `solve()`. $(\boldsymbol{X}'\boldsymbol{X})^{-1}$:
+```{r}
+solve(t(X)%*%X)
+```
+
+To multiply a scalar by a matrix, we use the familiar operator `*`. $\mathrm{MSE}(\boldsymbol{X}'\boldsymbol{X})^{-1}$:
+```{r}
+mse = summary(fit)$sigma^2
+mse*solve(t(X)%*%X)
+```

@@ -1,0 +1,96 @@
+---
+title: 'Discussion 9: Model Selection'
+author: "Christine Cai"
+date: "March 1, 2016"
+output: html_document
+---
+
+***
+
+```{r}
+dat = read.table('CH09PR13.txt')
+names(dat) = c('y', 'x1', 'x2', 'x3')
+head(dat)
+```
+
+Suppose the full model we want to consider uses all the first-order terms for the given predictors.
+```{r}
+fit = lm(y ~ ., data = dat)
+summary(fit)
+```
+
+### Best Subset
+
+So far, we've only used functions in R's base package. The function we're going to use for best subset regression, `leaps()`, is in the 'leaps' package. First, you'll need to install the package using `install.packages('leaps')`. If you're asked to choose a mirror, pick CA 1.
+
+Installing a package just means downloading some files to your hard drive. So you don't need to do this again the next time you open R.
+
+What you do need to do every time you restart R is to load the package.
+```{r}
+library('leaps')
+```
+
+Ignore the warning.
+
+Read the help file for `leaps()` before attempting to use it. The first argument 'x' is a matrix of predictors; here, we have 'dat' minus its first column.
+
+'y' is a response vector; here, we have the first column of 'dat', or dat$y. 
+
+For your hw problem, you're asked to use $R^2_\mathrm{adj}$, so set `method = 'adjr2'`.
+```{r}
+fit = leaps(dat[,-1], dat[,1], method = 'adjr2')
+fit
+```
+
+Suppose we want the 3 best subset regression models.
+
+By default, `leaps()` will return (up to) `nbest = 10` best models with 1 predictor, `nbest = 10` best models with 2 predictors, `nbest = 10` best models with 3 predictors, and so on... These models are stored in `fit$which`; `TRUE` means that variable is included and `FALSE` means it's not.
+
+The respective $R^2_\mathrm{adj}$'s are stored in `fit$adjr2`.
+
+So in order to get the best 3, we need to find out which of the models returned by `leaps()` corresponds to the 3 highest $R^2_\mathrm{adj}$'s.
+
+First, get the orders of the $R^2_\mathrm{adj}$'s from largest to smallest.
+```{r}
+ind = order(fit$adjr2, decreasing = TRUE)
+fit$adjr2
+ind
+```
+
+The above means that the 4th element of `fit$adjr2` is the largest, the 7th element is the 2nd largest, and so on... So the 3rd element is the smallest.
+
+If we rearrange the order of the elements in `fit$adjr2` based on `ind`, we get `fit$adjr2` in decreasing order.
+```{r}
+fit$adjr2[ind]
+```
+
+So the first 3 are the 3 largest $R^2_\mathrm{adj}$'s.
+
+To get the respective models, we just need to rearrange the rows of `fit$which` based on `ind`.
+```{r}
+fit$which[ind,]
+```
+
+The first 3 are the 3 best models according to $R^2_\mathrm{adj}$. They are:
+```{r}
+lm(y ~ x1 + x2, data = dat)
+lm(y ~ x1 + x2 + x3, data = dat)
+lm(y ~ x2, data = dat)
+```
+
+***
+
+### Stepwise
+
+The function we'll use for stepwise regression is `?step`. Depending on whether we want forward or backward selection, or the hybrid of the two, the syntax differ.
+
+Suppose we want to do forward selection and consider the range of models from an initial model using just the intercept to the model using all first-order terms for the given predictors.
+
+For `object`, enter the initial model with just the intercept.
+
+For `scope`, enter the formula (without the response) for the model using all first-order terms.
+
+Lastly, the default for `direction` is 'both', so make sure to set `direction = 'forward'`.
+```{r}
+step(lm(y ~ 1, data = dat), ~ x1 + x2 + x3, direction = 'forward')
+```

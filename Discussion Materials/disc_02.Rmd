@@ -1,0 +1,146 @@
+---
+title: "Discussion 2"
+author: "Christine Cai"
+date: "January 12, 2016"
+output: html_document
+---
+
+***
+
+To get the most out of discussions, please ask questions! If I'm going too fast or I've completely lost you, please let me know.
+
+You should be able to do hw problems (that require R) in chapter 2 using this document and the document from the first discussion. Some problems may take some more thinking than others. If you have trouble applying the code here to your hw, please come to my office hours with questions.
+
+For this class, I want to keep the R code simple. Often times, there will be more efficient/elegant ways to code than what I give you. If you know of a better way to do something, please don't feel restricted to the code presented in discussions.
+
+***
+
+### Working Directory
+
+For your homeworks, you will be given datasets in text files. In order to work with them, you first need to import them into R. Setting a working directory is like telling R where to look for the file.
+
+In this discussion, we will be using the file 'midparents.txt'. Please download it from Smartsite under Discussion Materials and pay attention to where the file gets downloaded to.
+
+Set your working directory by going to Session -> Set Working Directory -> Choose Directory. Then choose the folder that contains the data you want to import.
+
+***
+
+### Importing Data
+
+The command to import a text file is `read.table()`. Bring up the help file by using `?read.table`. There are many arguments for this function; you may ignore most of them. The only argument needed for this function to do something is 'file', which is the name of the file you want to import.
+
+If you set the appropriate working directory, then this should work:
+```{r}
+read.table('midparents.txt')
+```
+Note that the file name is in quotes; it doesn't matter whether you use single or double quotes. The above command only printed the data. If we want to work with this data, we need to save it.
+```{r}
+dat = read.table('midparents.txt')
+```
+Now the dataset in the text file is saved as the object 'dat' in R. I want to check if the data imported in correctly, but as we saw earlier, this dataset is pretty big, so I don't want to print the whole thing again.
+
+Look at the first 6 entries by using
+```{r}
+head(dat)
+```
+As it turns out, the data did not get imported in correctly. The first row is not data, but rather, the names of the columns of this dataset.
+
+Another important argument to `read.table()` is 'header'. If the dataset you want to import contains a header, or names for the columns, then header should be set to 'TRUE'. If the dataset does not contain a header, then header should be set to 'FALSE'.
+
+This dataset does contain a header, but by default, `header = FALSE` in `read.table()`. That is why the names of the columns are showing up as the first entry in dat.
+
+To correctly read in this dataset,
+```{r}
+dat = read.table('midparents.txt', header = TRUE)
+head(dat)
+```
+Since the default is `header = FALSE`, if the dataset does not contain a header, you don't need to specify it. That is, you only need to specify `header = TRUE` if there are column names.
+
+If the dataset you imported does not contain a header, R will name the first column 'V1', the second column 'V2', and so on if there are more columns.
+
+You can check the names.
+```{r}
+names(dat)
+```
+And change them.
+```{r}
+names(dat) = c('y', 'x')
+head(dat)
+```
+Note the quotes.
+
+***
+
+### Fitting a Linear Model
+
+The command for fitting a linear model is `lm()`. Bring up the help file by using `?lm`.
+
+To regress y (response) on x (predictor),
+```{r}
+lm(y ~ x, data = dat)
+```
+The default output for `lm()` just gives us $b_0$ and $b_1$. If we save this linear model object, we can extract a lot more information.
+```{r}
+fit = lm(y ~ x, data = dat)
+str(fit)
+fit$residuals
+fit$fitted.values
+summary(fit)
+summary(fit)$sigma # sqrt(MSE)
+```
+
+***
+
+### t Distribution
+
+If you would like to get a quantile of a t-distribution with a certain degree of freedom, you need the function `qt()`. Bring up the help file by using `?qt`. Note that this help file also contains information on `pt()`, which we will also talk about in this section.
+
+$\left( 1 - \frac{\alpha}{2} \right)$th quantile of the t distribution with 2 degrees of freedom (where $\alpha = .05$):
+```{r}
+qt(1 - .05/2, 2)
+```
+We input a probability into `qt()` to get out a quantile. For `pt()`, we input a quantile to get out a probability. In this class, `pt()` is mostly used to find p-values.
+
+The probability to the right of 4.302653 of the t distribution with degrees of freedom 2:
+```{r}
+pt(4.302653, 2, lower = FALSE)
+```
+This would be the p-value of a one-sided test. What would the p-value be for a two-sided test?
+
+***
+
+### F Distribution
+
+Similarly, we can get the $(1 - \alpha)$th quantile of the F distribution with numerator degrees of freedom 2 and denominator degrees of freedom 3 (where $\alpha = .05$) by using
+```{r}
+qf(1 - .05, 2, 3)
+```
+And the probability to the right of 9.552094 of the F distribution with numerator degrees of freedom 2 and denominator degrees of freedom 3 is
+```{r}
+pf(9.552094, 2, 3, lower = FALSE)
+```
+
+***
+
+### ANOVA
+
+To get the ANOVA table of the linear model 'fit',
+```{r}
+anova(fit)
+```
+Practice deriving the F-statistic and p-value!
+
+***
+
+### Misc.
+
+Recall that `mean()` gives the mean of a vector. So to get $\bar{X}$,
+```{r}
+mean(dat$x)
+```
+The function for getting correlation is `cor()`. Bring up the help page with `?cor` and try to figure out how to use this function on your own.
+
+To obtain ordered residuals,
+```{r}
+sort(fit$res)
+```

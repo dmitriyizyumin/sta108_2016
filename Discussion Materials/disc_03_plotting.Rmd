@@ -1,0 +1,99 @@
+---
+title: "Discussion 3: Plotting"
+author: "Christine Cai"
+date: "January 19, 2016"
+output: html_document
+---
+
+***
+
+Read in the data and fit a linear model (see disc_02.html).
+```{r}
+dat = read.table('midparents.txt', header = TRUE)
+names(dat) = c('y', 'x')
+head(dat)
+fit = lm(y ~ x, data = dat)
+```
+
+Suppose we want to plot the data, use
+```{r}
+plot(dat$x, dat$y)
+```
+
+A common error people get when plotting in RStudio is 'Error in plot.new() : figure margins too large'. This means the quadrant/panel that contains your 'Plots' tab is too small. Simply click and drag the border to make the panel bigger.
+
+Make sure to label the x and y axes so that your readers know what you're plotting.
+```{r}
+plot(dat$x, dat$y, xlab = 'Midparent', ylab = 'Child')
+```
+
+You may also want to add a main title to your plot,
+```{r}
+plot(dat$x, dat$y, xlab = 'Midparent', ylab = 'Child', 
+     main = 'Midparent Data')
+```
+
+You can change the y-limits using the argument 'ylim',
+```{r}
+plot(dat$x, dat$y, xlab = 'Midparent', ylab = 'Child', 
+     main = 'Midparent Data', ylim = c(60, 75))
+```
+
+'ylim' may be useful if a problem asks for 2 plots with the same scale, such as problem 2.26. Something else that may be useful for problem 2.26 is being able to look at more than one plot in one plotting window. Suppose we want to plot the data (Child against Midparent) and the residuals against Midparent side by side. We would make use of the argument 'mfrow' in the function `par()`.
+```{r}
+par(mfrow = c(1, 2))
+plot(dat$x, dat$y, xlab = 'Midparent', ylab = 'Child')
+plot(dat$x, fit$res, xlab = 'Midparent', ylab = 'Residuals')
+par(mfrow = c(1, 1))
+```
+
+`par()` is a function to set graphical parameters for future plots, it has many many arguments, one of which is 'mfrow'. The argument 'mfrow' tells R how many rows and columns you want for plotting. For example, if we want 2 plots side by side, then we want 1 row and 2 columns. If we want 4 plots, 2 on top and 2 on bottom, then we would need 2 rows and 2 columns.
+
+The 2nd call to par in the above commands resets mfrow to the default, just one plot per window.
+
+We can use the function `points()` to add points/lines to a plot. This is useful for adding the regression function to a scatterplot of the data.
+```{r}
+plot(dat$x, dat$y, xlab = 'Midparent', ylab = 'Child', 
+     main = 'Midparent Data')
+points(dat$x, fit$fitted, type = 'l')
+```
+
+`Points()` does not create a new plot, but rather, it adds points/lines to the last plot you created. The argument 'type' tells R what you would like to add. The default is 'p' for points. You can change it to 'l' for line, or 'b' for both points and the line connecting those points. Change the type in the above code to see the differences. Note that you will need to rerun the `plot()` call as well because `points()` just add points/lines to an existing plot.
+
+***
+
+### Boxplots
+
+Boxplot of residuals:
+```{r}
+boxplot(fit$res, main = 'Residuals')
+```
+
+***
+
+### Normal Probability (QQ) Plots
+
+Normal probability plot of residuals:
+```{r}
+qqnorm(fit$res)
+```
+
+Add the theoretical line that the points should fall on under normality:
+```{r}
+qqnorm(fit$res)
+qqline(fit$res)
+```
+
+***
+
+### Saving Plots
+
+Suppose we want to save the boxplot from earlier. Depending on how you're formatting your hw, this may make printing your plots easier. There are several different types of files we can save our plots as, we will only discuss .png here.
+```
+png('boxplot.png') # open graphics device
+boxplot(fit$res, main = 'Residuals') # plot
+dev.off() # close device
+```
+The `png()` command above opens a connection to the file 'boxplot.png'. You would then plot whatever you want saved. Note that you can use `par()` to save more than one plot per file. `dev.off()` tells R that you are done plotting and to close the connection to the file 'boxplot.png'.
+
+The `png()` command above will automatically create the file 'boxplot.png'. If you already have a file named 'boxplot.png', the above code will overwrite it.

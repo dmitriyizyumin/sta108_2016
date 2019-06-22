@@ -1,0 +1,45 @@
+---
+title: "Discussion 8: Polynomial Regression"
+author: "Christine Cai"
+date: "February 23, 2016"
+output: html_document
+---
+
+***
+
+```{r}
+dat = read.table('CH08PR06.txt')
+names(dat) = c('y', 'X') # note the capital X
+head(dat)
+plot(dat$X, dat$y, xlab = 'Age', ylab = 'Steroid Level')
+```
+
+Due to the quadratic trend in the data, we may want to try fitting a quadratic model. To fit a polynomial model, we should center the predictor(s) first. Why?
+```{r}
+x = dat$X - mean(dat$X)
+```
+
+Then create the desired higher order terms. Since we want to fit a quadratic model here, we only need $x^2$.
+```{r}
+x2 = x^2
+```
+
+Fit the quadratic model,
+```{r}
+fit = lm(dat$y ~ x + x2); fit
+```
+
+Note that `y` is a column in `dat`, but `x` and `x2` are not.
+```{r}
+head(dat)
+```
+
+That's why the above `lm()` call has different syntax from what we've been doing so far. If you want, you can put `x` and `x2` into dat,
+```{r}
+dat = cbind(dat, x, x2); head(dat)
+```
+
+And fit the model using
+```{r}
+fit = lm(y ~ x + x2, data = dat); fit
+```

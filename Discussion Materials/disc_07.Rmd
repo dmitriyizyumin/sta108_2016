@@ -1,0 +1,102 @@
+---
+title: "Discussion 7"
+author: "Christine Cai"
+date: "February 16, 2016"
+output: html_document
+---
+
+***
+
+```{r}
+dat = read.table('CH06PR09.txt')
+dat = read.table('CH06PR15.txt')
+names(dat) = c('y', 'x1', 'x2', 'x3')
+head(dat)
+```
+
+Prepare a stem-and-leaf plot for $X_1$,
+```{r}
+stem(dat$x1)
+```
+
+Obtain the scatter plot matrix,
+```{r}
+plot(dat)
+```
+
+Obtain the correlation matrix,
+```{r}
+cor(dat)
+```
+
+Fit a multiple regression model,
+```{r}
+fit = lm(y ~ x1 + x2 + x3, data = dat); fit
+```
+
+Or equivalently,
+```{r}
+fit = lm(y ~ ., data = dat); fit
+```
+
+Most of what we've learned for simple regression carries over for multiple regression. For example, to extract the residuals from the lm object 'fit', we would use the familiar `fit$res`.
+
+Plot the residuals against the two-factor interaction term $X_1X_2$,
+```{r}
+plot(dat$x1*dat$x2, fit$res, xlab = 'X_1*X_2', ylab = 'Residuals')
+```
+
+For multiple regression, the default ANOVA table in R gives extra sums of squares. Please read chapter 7 carefully and write down the extra sums of squares definitions on your cheat sheet.
+```{r}
+anova(fit)
+```
+
+Going from top to bottom in the 'Sum Sq' column, the entries are
+\[SSR(X_1),\ SSR(X_2|X_1),\ SSR(X_3|X_1, X_2), \text{ and } SSE(X_1, X_2, X_3).\]
+
+In testing whether there is a regression relation, the F-statistic is
+```{r}
+f.star = (136366+5726+2034514)/3/20532; f.star
+```
+
+Calculate the coefficient of multiple determination,
+```{r}
+r.sq = (136366+5726+2034514)/(136366+5726+2034514+985530); r.sq
+```
+
+Or
+```{r}
+r.sq = 1 - 985530/(136366+5726+2034514+985530); r.sq
+```
+
+Obtain $\hat{Y}_h$ with $X_{h1} = 282,000$, $X_{h2} = 7.10$, and $X_{h3} = 0$,
+```{r}
+x.h = c(1, 282000, 7.1, 0)
+y.h = t(x.h)%*%fit$coef; y.h
+```
+
+Obtain $s\{\hat{Y}_h\}$,
+```{r}
+mse = summary(fit)$sigma^2; mse
+X = model.matrix(fit); head(X)
+s.yh = sqrt(mse*(t(x.h)%*%solve(t(X)%*%X)%*%x.h)); s.yh
+```
+
+***
+
+The hw problems in chapter 7 mostly just involve the fitting and refitting of many different models.
+
+Suppose instead of
+\[SSR(X_1),\ SSR(X_2|X_1),\ SSR(X_3|X_1, X_2), \text{ and } SSE(X_1, X_2, X_3),\]
+we want
+\[SSR(X_2),\ SSR(X_1|X_2),\ SSR(X_3|X_1, X_2), \text{ and } SSE(X_1, X_2, X_3),\]
+we just have to change the order of the predictors when we fit our model.
+```{r}
+fit = lm(y ~ x2 + x1 + x3, data = dat); fit
+anova(fit)
+```
+
+In testing whether $X_3$ can be dropped given that $X_1$ and $X_2$ are retained, the F-statistic is
+```{r}
+f.star = 2034514/20532; f.star
+```

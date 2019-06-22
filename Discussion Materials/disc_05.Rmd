@@ -1,0 +1,53 @@
+---
+title: "Discussion 5"
+author: "Christine Cai"
+date: "Feb 2, 2016"
+output: html_document
+---
+
+***
+
+### F Test for Lack of Fit
+
+Read in the data. I'm using 'CH03TA10.txt' for this example; the file can be found using the 'hw datasets' link in Textbook Problems and Datasets on Smartsite.
+```{r}
+dat = read.table('CH03TA10.txt')
+names(dat) = c('y', 'x')
+head(dat)
+```
+What is the test statistic for an F test for lack of fit?
+
+Fit the reduced model.
+```{r}
+fit.r = lm(y ~ x, data = dat)
+```
+Fit the full model.
+```{r}
+fit.f = lm(y ~ 0 + as.factor(x), data = dat)
+```
+Bring up the ANOVA tables and obtain the test statistic.
+```{r}
+anova(fit.r)
+anova(fit.f)
+f.star = (0.012371 - 0.012131)/2/0.0006065; f.star
+```
+While the above suffices, if you want to utilize R to pull out the numbers for you, so that your results are more precise, you can use `str()` to find where the numbers are stored.
+```{r}
+str(anova(fit.r))
+f.star = 
+  (anova(fit.r)$'Sum Sq'[2] - 
+     anova(fit.f)$'Sum Sq'[length(anova(fit.f)$'Sum Sq')])/
+  (anova(fit.r)$Df[2] - anova(fit.f)$Df[2])/
+  anova(fit.f)$'Mean Sq'[2]
+f.star
+```
+If you want R to calculate the test statistic for you,
+```{r}
+anova(fit.r, fit.f)
+```
+You need to know the degrees of freedom without looking at the ANOVA tables. The df associated with SSE(R) is $n - 2$. The df associated with SSE(F) is $n - c$, where $c$ is the number of unique levels of $X_i$'s. Here are two ways you can obtain $c$:
+```{r}
+c = length(unique(dat$x)); c
+c = length(levels(as.factor(dat$x))); c
+```
+How would we find the critical value and p-value?

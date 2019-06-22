@@ -1,0 +1,157 @@
+---
+title: "Discussion 3"
+author: "Dmitriy Izyumin"
+date: "April 12, 2016"
+output: html_document
+---
+
+***
+
+If this is your first experience with R, this introduction may seem daunting. But don't worry! You'll learn through practice. You don't need to feel like you've mastered the basics of R from just reading this document.
+
+To get the most out of discussions, please ask questions! If I'm going too fast or I've completely lost you, please let me know.
+
+***
+
+When you first open RStudio, you should see 4 panels; you may customize them however you want.
+
+One of the panels should be the console. This is where the code is actually ran, and where output will be displayed.
+
+Another panel should be for R scripts. You can think of an R script like a text file in which you can save your code. You should be typing and saving your code in R scripts, and running them from there using the 'Run' button, ctrl+r for Windows, or command+enter for Macs. You can run more than 1 line at a time by first highlighting the desired lines.
+
+***
+
+Start a line with '#' to create a comment. For example:
+```
+# This is a comment. R will not treat this line as code.
+```
+It's easy to forget code you wrote weeks ago. Try to comment your code so you can more easily refer back to it later.
+```
+### You can start a comment line with as many '#'s as you want.
+```
+
+***
+
+R is a calculator.
+```{r}
+68/9*(84 - 2)^3/34
+```
+In this document, code is displayed in the shaded boxes. The boxes following them contain output.
+
+***
+
+### Functions
+
+R has built-in functions.
+```{r}
+sqrt(45) # square root of 45
+log(67) # natural log (base e) of 67
+log(67, 2) # log base 2 of 67
+exp(1) # e to the power of 1
+exp(-10) # e to the power of -10
+sin(pi) # pi is a value already stored in R
+cos(pi)
+tan(pi)
+factorial(5)
+choose(10, 2) # 10 choose 2
+```
+Everything inside the parentheses are arguments. Different functions take in different arguments. Also, because R is open source and has many contributors, syntax tends to vary from function to function.
+
+That's why it's important to get used to using the help files. You can bring up a help file for a function by typing '?' followed by the name of the function. For example, `?log` will bring up the help file for the log() function.
+
+Looking at the help file, you can see that each argument has a name.
+
+The following are equivalent (log base 2 of 67):
+```{r}
+log(x = 67, base = 2)
+log(base = 2, x = 67)
+log(67, 2)
+```
+As you can see, it's not necessary to name each argument. If you enter unnamed arguments, R will use them in the order they appear in the help file. For example, 
+```{r}
+log(2, 67)
+```
+returns log base 67 of 2 instead.
+
+Also, the argument 'base' has a default value. That's why if you don't enter your own value for base, `log(67)` returns natural log of 67.
+
+When we get to more involved functions with many arguments, some with default values, you may find it necessary to name your arguements. Otherwise, there is nothing wrong with not naming your arguments.
+
+***
+
+### Objects
+
+You can assign values to objects using any one of the following:
+```{r}
+x = 5
+x <- 5
+5 -> x
+```
+Now 'x' is saved as 5.
+```{r}
+x
+```
+If you choose to use the arrow, note the direction. You are assigning 5 to x, not x to 5. So `x -> 5` would be incorrect.
+
+Which names are ok to use for objects? Start the name with a letter, followed by numbers, ., or _. Single letters are also valid names.
+
+There are certain reserved words that you can't use, such as `if`. Also, you may not want to overwrite something that is already saved in R, either by default or by you. One thing you can do is to type a potential name into the console and press enter. If you get an error message saying that the object is not found, then you can use that name for a new object.
+
+Objects can be used in functions.
+```{r}
+y = 5
+log(x)
+(8 + sqrt(y))^4/76
+```
+Objects can also be used to assign values to new objects or overwrite existing objects.
+```{r}
+z = y + 2*x - 3
+x = x*10
+```
+
+***
+
+### Vectors
+
+Create a vector.
+```
+c(1, 24, -7, 89, 0)
+```
+Save this vector as 'x'.
+```{r}
+x = c(1, 24, -7, 89, 0)
+```
+R is vectorized; it applies functions to every element of a vector.
+```{r}
+x - 10
+x^2
+```
+You can also directly enter a vector into a function as an argument, without assigning it a name.
+```{r}
+log(c(1, 24, 7, 89, 10))
+```
+Some useful statistical functions:
+```{r}
+mean(x) # mean
+sd(x) # standard deviation
+var(x) # variance
+summary(x) # some summary statistics for the vector x
+sum(x) # sum of all elements
+prod(x) # product of all elements
+length(x) # number of elements
+class(x) # class of vector (for now we'll only deal with numeric vectors)
+```
+Example: computing sample variance $\frac{1}{n - 1} \sum_{i=1}^n (x_i - \bar{x})^2$.
+```{r}
+(x - mean(x)) # vector of deviations
+(x - mean(x))^2 # vector of squared deviations
+sum((x - mean(x))^2) # sum of squared deviations
+sum((x - mean(x))^2)/(length(x) - 1) # sample variance
+```
+Create vectors with more structure:
+```{r}
+1:25 # sequence of integers
+seq(1, 25, 0.2) # other sequences
+rep(x, 5) # vectors with repeated elements
+rep(x, each = 5)
+```

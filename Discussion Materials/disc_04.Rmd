@@ -1,0 +1,81 @@
+---
+title: "Discussion 4"
+author: "Christine Cai"
+date: "January 26, 2016"
+output: html_document
+---
+
+***
+
+### Diagnostics
+
+Read in the data. For this discussion, I'm using CH03TA07.txt, which can be found using the 'hw datasets' link in Textbook Problems and Datasets on Smartsite.
+```{r}
+dat = read.table('CH03TA07.txt')
+
+names(dat) = c('x', 'y')
+head(dat)
+```
+
+Get an initial feel of the data with a scatterplot.
+```{r}
+plot(dat$x, dat$y, xlab = 'Days of Training', ylab = 'Performance Score')
+```
+
+Fit a simple linear model and add the regression line.
+```{r}
+fit = lm(y ~ x, data = dat)
+plot(dat$x, dat$y, xlab = 'Days of Training', ylab = 'Performance Score')
+points(dat$x, fit$fit, type = 'l')
+```
+
+To detect outliers and asymmetry,
+```{r}
+boxplot(fit$res, main = 'Residuals')
+```
+
+To detect nonlinearity, heteroscedasticity, and outliers,
+```{r}
+plot(dat$x, fit$res, xlab = 'Days of Training', ylab = 'Residuals'); abline(h = 0)
+plot(fit$fit, fit$res, xlab = 'Fitted Values', ylab = 'Residuals'); abline(h = 0)
+```
+
+In simple linear regression, the two plots above are redundant.
+
+Up until now, we have used a new line every time we entered a new command. If you want more than one command on the same line, you can use a semicolon to separate them.
+
+The `abline()` command adds a 'h'orizontal line at 0 to the last plot created.
+
+Want: no systematic patterns, an even spread about 0.
+
+***
+
+To detect non-normality,
+```{r}
+qqnorm(fit$res); qqline(fit$res)
+```
+
+Want: points to fall on the theoretical line.
+
+Are the above plots satisfactory? If not, what can we do?
+
+***
+
+### Transformation
+
+Since the residuals vs predictor/fitted values plots exhibit a parabolic pattern with homoscedasticity, let's try the transformation $X' = \sqrt{X}$.
+```{r}
+x.trans = sqrt(dat$x)
+fit = lm(dat$y ~ x.trans)
+plot(x.trans, dat$y, xlab = 'Days of Training (Square Root)', 
+     ylab = 'Performance Score')
+points(x.trans, fit$fit, type = 'l')
+boxplot(fit$res, main = 'Residuals (Transformed)')
+plot(x.trans, fit$res, xlab = 'Days of Training (Square Root)', 
+     ylab = 'Residuals'); abline(h = 0)
+plot(fit$fit, fit$res, xlab = 'Fitted Values', ylab = 'Residuals', 
+     main = 'Transformed'); abline(h = 0)
+qqnorm(fit$res, main = 'Normal Q-Q Plot (Transformed)'); qqline(fit$res)
+```
+
+What are your thoughts on these plots?
